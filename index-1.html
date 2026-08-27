@@ -1,0 +1,1629 @@
+<title>PaisaPilot</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  /* ============ THEME TOKENS ============ */
+  :root{
+    --bg:#F6F4FB;
+    --surface:#FFFFFF;
+    --surface-alt:#EFEAFA;
+    --surface-raised:#FFFFFF;
+    --ink:#2A2640;
+    --ink-muted:#6E6785;
+    --ink-faint:#9891AC;
+    --line:#E3DEF2;
+    --accent:#6E5DE0;
+    --accent-ink:#FFFFFF;
+    --accent-soft:#E7E2FC;
+    --good:#3F8F6C;
+    --good-soft:#DFF3E8;
+    --warn:#B9791F;
+    --warn-soft:#F7E9D3;
+    --shadow: 0 1px 2px rgba(42,38,64,0.06), 0 8px 24px rgba(42,38,64,0.08);
+    --shadow-card: 0 6px 16px rgba(42,38,64,0.18), 0 1px 2px rgba(42,38,64,0.10);
+    --glass-bg: rgba(255,255,255,0.52);
+    --glass-bg-strong: rgba(255,255,255,0.74);
+    --glass-border: rgba(255,255,255,0.65);
+    --glass-highlight: rgba(255,255,255,0.85);
+    --blob-1:#8B7CF0; --blob-2:#F0956B; --blob-3:#5FC7B9;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#18152A;
+      --surface:#221E38;
+      --surface-alt:#2A2544;
+      --surface-raised:#2A2544;
+      --ink:#EFEBFA;
+      --ink-muted:#A79FC4;
+      --ink-faint:#786F98;
+      --line:#37314F;
+      --accent:#A99BFF;
+      --accent-ink:#1B1830;
+      --accent-soft:#332C55;
+      --good:#6CC79A;
+      --good-soft:#22392E;
+      --warn:#E0A857;
+      --warn-soft:#3A2E1A;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+      --shadow-card: 0 8px 20px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
+      --glass-bg: rgba(34,30,56,0.50);
+      --glass-bg-strong: rgba(34,30,56,0.78);
+      --glass-border: rgba(255,255,255,0.10);
+      --glass-highlight: rgba(255,255,255,0.14);
+      --blob-1:#6E5DE0; --blob-2:#C9622A; --blob-3:#0E7C7B;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#18152A;
+    --surface:#221E38;
+    --surface-alt:#2A2544;
+    --surface-raised:#2A2544;
+    --ink:#EFEBFA;
+    --ink-muted:#A79FC4;
+    --ink-faint:#786F98;
+    --line:#37314F;
+    --accent:#A99BFF;
+    --accent-ink:#1B1830;
+    --accent-soft:#332C55;
+    --good:#6CC79A;
+    --good-soft:#22392E;
+    --warn:#E0A857;
+    --warn-soft:#3A2E1A;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    --shadow-card: 0 8px 20px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
+    --glass-bg: rgba(34,30,56,0.50);
+    --glass-bg-strong: rgba(34,30,56,0.78);
+    --glass-border: rgba(255,255,255,0.10);
+    --glass-highlight: rgba(255,255,255,0.14);
+    --blob-1:#6E5DE0; --blob-2:#C9622A; --blob-3:#0E7C7B;
+    color-scheme: dark;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  .bg-blobs{
+    position:fixed; inset:0; z-index:0;
+    overflow:hidden; pointer-events:none;
+  }
+  .bg-blobs span{
+    position:absolute; border-radius:50%; filter:blur(80px); opacity:0.4;
+  }
+  .bg-blobs span:nth-child(1){ width:360px; height:360px; background:var(--blob-1); top:-100px; left:-80px; animation:driftA 24s ease-in-out infinite; }
+  .bg-blobs span:nth-child(2){ width:320px; height:320px; background:var(--blob-2); top:20px; right:-120px; animation:driftB 28s ease-in-out infinite; }
+  .bg-blobs span:nth-child(3){ width:300px; height:300px; background:var(--blob-3); top:480px; left:50%; margin-left:-150px; animation:driftC 26s ease-in-out infinite; }
+  @keyframes driftA{ 0%,100%{ transform:translate(0,0);} 50%{ transform:translate(24px,18px);} }
+  @keyframes driftB{ 0%,100%{ transform:translate(0,0);} 50%{ transform:translate(-20px,26px);} }
+  @keyframes driftC{ 0%,100%{ transform:translate(0,0);} 50%{ transform:translate(16px,-20px);} }
+
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:translateY(0);} }
+  h1,h2,h3,.display{
+    font-family:"Fraunces", ui-serif, Georgia, serif;
+    text-wrap:balance;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  .mono, .num{
+    font-family:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  button, input, select, textarea{ font-family:inherit; color:inherit; }
+  button{ cursor:pointer; }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:6px; }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+
+  .app{
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    z-index:1;
+  }
+  .screen{ animation: fadeUp .28s ease; }
+
+  /* ---------- Top bar (Apple-style frosted glass) ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 20px;
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:var(--glass-bg);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border-bottom:1px solid var(--glass-border);
+    box-shadow: inset 0 -1px 0 var(--glass-highlight);
+  }
+  .brand{ display:flex; flex-direction:column; gap:1px; }
+  .brand .word{
+    font-size:26px;
+    font-style:italic;
+    font-weight:600;
+    color:var(--ink);
+    line-height:1;
+  }
+  .brand .word em{ color:var(--accent); font-style:italic; }
+  .brand .tag{
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .icon-btn{
+    width:38px; height:38px;
+    border-radius:14px;
+    border:1px solid var(--glass-border);
+    background:var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:var(--shadow), inset 0 1px 0 var(--glass-highlight);
+    color:var(--ink-muted);
+  }
+  .icon-btn:active{ transform:translateY(1px); }
+  .topbar-actions{ display:flex; gap:8px; }
+
+  /* ---------- Tab content ---------- */
+  .screen{
+    flex:1;
+    padding:8px 20px 100px;
+  }
+  .hidden{ display:none !important; }
+
+  section + section{ margin-top:28px; }
+  .section-label{
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin:0 0 10px 2px;
+    font-weight:600;
+  }
+
+  /* ---------- Search + chips ---------- */
+  .search-wrap{
+    position:relative;
+  }
+  .search-wrap input{
+    width:100%;
+    border:1px solid var(--glass-border);
+    background:var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    backdrop-filter: blur(18px) saturate(180%);
+    border-radius:16px;
+    padding:14px 16px;
+    font-size:15px;
+    color:var(--ink);
+    box-shadow:var(--shadow), inset 0 1px 0 var(--glass-highlight);
+  }
+  .search-wrap input::placeholder{ color:var(--ink-faint); }
+
+  .chipgrid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px;
+  }
+  .chip{
+    border:1px solid var(--glass-border);
+    background:var(--glass-bg);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(180%);
+    color:var(--ink-muted);
+    padding:9px 14px;
+    border-radius:100px;
+    font-size:13.5px;
+    font-weight:600;
+    transition:background .12s ease, color .12s ease, border-color .12s ease, transform .08s ease;
+  }
+  .chip:active{ transform:scale(0.97); }
+  .chip.is-active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:var(--accent-ink);
+  }
+  .chip.is-hidden{ display:none; }
+  .more-toggle{
+    background:none;
+    border:none;
+    color:var(--accent);
+    font-size:13px;
+    font-weight:700;
+    padding:9px 4px;
+  }
+
+  /* ---------- Physical card visual ---------- */
+  .card-visual{
+    aspect-ratio:1.586/1;
+    border-radius:16px;
+    position:relative;
+    padding:16px 18px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    color:#fff;
+    box-shadow:var(--shadow-card);
+    overflow:hidden;
+    isolation:isolate;
+  }
+  .card-visual::after{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(115deg, rgba(255,255,255,0.16), rgba(255,255,255,0) 40%);
+    pointer-events:none;
+  }
+  .card-visual .row{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .card-visual .bank{
+    font-size:12.5px; font-weight:700; letter-spacing:0.01em;
+  }
+  .card-visual .type-badge{
+    font-size:9.5px; letter-spacing:0.08em; text-transform:uppercase;
+    background:rgba(255,255,255,0.22);
+    padding:3px 7px; border-radius:100px; font-weight:700;
+  }
+  .chip-glyph{
+    width:30px; height:22px;
+    border-radius:5px;
+    background:linear-gradient(135deg, rgba(255,255,255,0.85), rgba(255,255,255,0.45));
+    position:relative;
+  }
+  .chip-glyph::before, .chip-glyph::after{
+    content:""; position:absolute; left:0; right:0; height:1px; background:rgba(0,0,0,0.18);
+  }
+  .chip-glyph::before{ top:33%; } .chip-glyph::after{ top:66%; }
+  .card-visual .pan{
+    font-size:13.5px;
+    letter-spacing:0.14em;
+    font-weight:500;
+    opacity:0.92;
+  }
+  .card-visual .variant{ font-size:12.5px; font-weight:600; opacity:0.95; }
+  .card-visual .network{ font-size:11px; opacity:0.8; letter-spacing:0.04em; }
+  .card-visual.is-small{ padding:12px 14px; }
+  .card-visual.is-small .bank{ font-size:10.5px; }
+  .card-visual.is-small .pan{ font-size:11px; }
+  .card-visual.is-small .variant{ font-size:10.5px; }
+
+  /* ---------- Results ---------- */
+  .fan{
+    position:relative;
+    margin-top:16px;
+  }
+  .result-card{
+    animation: rise .28s ease both;
+  }
+  @keyframes rise{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:translateY(0);} }
+
+  .recommend-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--good-soft); color:var(--good);
+    font-size:11.5px; font-weight:700; letter-spacing:0.03em;
+    padding:5px 10px; border-radius:100px;
+    margin-bottom:10px;
+  }
+  .recommend-badge .dot{ width:6px; height:6px; border-radius:50%; background:var(--good); }
+
+  .detail-panel{
+    background:var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: blur(20px) saturate(160%);
+    border:1px solid var(--glass-border);
+    border-radius:22px;
+    padding:16px 18px;
+    margin-top:14px;
+    box-shadow:var(--shadow), inset 0 1px 0 var(--glass-highlight);
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .kv-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:14px;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--line);
+  }
+  .kv-row:last-child{ border-bottom:none; padding-bottom:0; }
+  .kv-label{ font-size:12px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; white-space:nowrap; }
+  .kv-value{ font-size:14px; text-align:right; font-weight:500; }
+  .kv-value.rate{ font-size:20px; font-weight:600; color:var(--good); }
+  .kv-value .sub{ display:block; font-size:12px; color:var(--ink-muted); font-weight:400; margin-top:2px; }
+  .format-pill{
+    display:inline-block; font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:100px;
+    background:var(--accent-soft); color:var(--accent);
+  }
+  .cap-pill{
+    display:inline-block; font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:100px;
+    background:var(--warn-soft); color:var(--warn); margin-left:6px;
+  }
+
+  .rank-list{ margin-top:14px; display:flex; flex-direction:column; gap:6px; }
+  .rank-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 12px;
+    background:var(--glass-bg);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border:1px solid var(--glass-border);
+    border-radius:14px;
+    font-size:13px;
+  }
+  .rank-row .name{ font-weight:600; }
+  .rank-row .sub{ color:var(--ink-faint); font-size:11.5px; }
+  .rank-row .rate{ font-family:"IBM Plex Mono",monospace; font-weight:600; }
+  .rank-row.excluded{ opacity:0.5; }
+  .rank-toggle{
+    background:none; border:none; color:var(--accent); font-weight:700; font-size:13px;
+    padding:8px 2px; align-self:flex-start;
+  }
+
+  .amount-row{
+    display:flex; align-items:center; gap:10px;
+    background:var(--surface-alt);
+    border-radius:14px;
+    padding:10px 14px;
+    margin-top:14px;
+  }
+  .amount-row label{ font-size:12.5px; color:var(--ink-muted); font-weight:600; white-space:nowrap; }
+  .amount-row .prefix{ font-family:"IBM Plex Mono",monospace; color:var(--ink-faint); }
+  .amount-row input{
+    flex:1; border:none; background:none; font-family:"IBM Plex Mono",monospace;
+    font-size:15px; color:var(--ink); min-width:0;
+  }
+  .amount-row input:focus{ outline:none; }
+
+  .empty-state{
+    margin-top:22px;
+    padding:26px 20px;
+    border:1px dashed var(--line);
+    border-radius:18px;
+    text-align:center;
+    color:var(--ink-faint);
+    font-size:13.5px;
+  }
+
+  /* ---------- My Cards ---------- */
+  .cards-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  @media (max-width:380px){ .cards-grid{ grid-template-columns:1fr; } }
+  .card-tile{
+    display:flex; flex-direction:column; gap:6px;
+    background:none; border:none; padding:0; text-align:left;
+  }
+  .card-tile .meta{ font-size:11.5px; color:var(--ink-faint); padding:0 2px; }
+  .card-tile .meta strong{ color:var(--ink-muted); font-weight:600; }
+  .add-card-tile{
+    aspect-ratio:1.586/1;
+    border:1.5px dashed var(--line);
+    border-radius:16px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink-faint);
+    font-size:13px; font-weight:600;
+    background:var(--surface-alt);
+  }
+
+  /* ---------- Settings ---------- */
+  .settings-card{
+    background:var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: blur(20px) saturate(160%);
+    border:1px solid var(--glass-border);
+    border-radius:20px;
+    padding:16px 18px;
+    box-shadow:var(--shadow), inset 0 1px 0 var(--glass-highlight);
+  }
+  .settings-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .settings-row:last-child{ border-bottom:none; padding-bottom:0; }
+  .settings-row:first-child{ padding-top:0; }
+  .settings-row .label{ font-size:14px; font-weight:600; }
+  .settings-row .desc{ font-size:12px; color:var(--ink-faint); margin-top:2px; }
+  .seg{
+    display:flex; background:var(--surface-alt); border-radius:10px; padding:3px; gap:2px;
+  }
+  .seg button{
+    border:none; background:none; padding:6px 12px; border-radius:8px; font-size:12.5px; font-weight:600; color:var(--ink-muted);
+  }
+  .seg button.is-active{ background:var(--surface); color:var(--ink); box-shadow:var(--shadow); }
+
+  .btn{
+    border:none; border-radius:12px; padding:12px 18px; font-size:14px; font-weight:700;
+    background:var(--accent); color:var(--accent-ink);
+  }
+  .btn:active{ transform:translateY(1px); }
+  .btn.secondary{ background:var(--surface-alt); color:var(--ink); }
+  .btn.danger{ background:#E8546B; color:#fff; }
+  .btn.block{ width:100%; }
+  .btn.ghost{ background:none; color:var(--accent); padding:8px 4px; }
+
+  .callout{
+    background:var(--surface-alt);
+    border-radius:14px;
+    padding:14px 16px;
+    font-size:12.5px;
+    color:var(--ink-muted);
+    line-height:1.5;
+  }
+  .callout strong{ color:var(--ink); }
+
+  /* ---------- Tab bar ---------- */
+  .tabbar{
+    position:fixed;
+    left:50%; transform:translateX(-50%);
+    bottom:16px;
+    width:calc(100% - 32px);
+    max-width:488px;
+    background:var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(26px) saturate(180%);
+    backdrop-filter: blur(26px) saturate(180%);
+    border:1px solid var(--glass-border);
+    border-radius:26px;
+    box-shadow:var(--shadow-card), inset 0 1px 0 var(--glass-highlight);
+    display:flex;
+    padding:6px;
+    z-index:40;
+  }
+  .tab{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    border:none; background:none;
+    padding:9px 4px 8px;
+    border-radius:14px;
+    color:var(--ink-faint);
+    font-size:11.5px;
+    font-weight:700;
+  }
+  .tab .glyph{ width:18px; height:18px; }
+  .tab.is-active{ color:var(--accent); background:var(--accent-soft); }
+
+  /* ---------- Lock screen ---------- */
+  .lock-overlay{
+    position:fixed; inset:0; z-index:100;
+    background:var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(40px) saturate(160%);
+    backdrop-filter: blur(40px) saturate(160%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:22px; padding:20px;
+  }
+  .lock-word{ font-family:"Fraunces",serif; font-style:italic; font-size:24px; }
+  .dots{ display:flex; gap:12px; }
+  .dot-slot{
+    width:14px; height:14px; border-radius:50%;
+    border:1.5px solid var(--line);
+  }
+  .dot-slot.is-filled{ background:var(--accent); border-color:var(--accent); }
+  .dots.shake{ animation:shake .32s ease; }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-8px);} 75%{transform:translateX(8px);} }
+  .keypad{
+    display:grid; grid-template-columns:repeat(3,64px); gap:14px;
+  }
+  .keypad button{
+    width:64px; height:64px; border-radius:50%;
+    border:1px solid var(--glass-border);
+    background:var(--glass-bg);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    font-size:20px; font-weight:600; color:var(--ink);
+    box-shadow:var(--shadow), inset 0 1px 0 var(--glass-highlight);
+  }
+  .keypad button:active{ background:var(--accent-soft); }
+  .lock-msg{ font-size:12.5px; color:var(--warn); min-height:16px; }
+
+  /* ---------- Modal (card editor) ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(20,16,36,0.45);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:80;
+  }
+  .modal{
+    background:var(--bg);
+    width:100%; max-width:520px;
+    max-height:88vh;
+    overflow-y:auto;
+    border-radius:28px 28px 0 0;
+    padding:18px 20px 28px;
+    box-shadow:0 -8px 30px rgba(0,0,0,0.25);
+    border-top:1px solid var(--glass-border);
+  }
+  .modal-handle{
+    width:40px; height:4px; background:var(--line); border-radius:4px; margin:0 auto 14px;
+  }
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+  .field label{ font-size:12px; font-weight:700; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.05em; }
+  .field input, .field select, .field textarea{
+    border:1px solid var(--line); background:var(--surface); border-radius:12px;
+    padding:11px 13px; font-size:14px; color:var(--ink);
+  }
+  .field textarea{ resize:vertical; min-height:56px; }
+  .field-row{ display:flex; gap:10px; min-width:0; }
+  .field-row .field{ flex:1; min-width:0; }
+  .field-row .field input, .field-row .field select{ width:100%; min-width:0; }
+  .swatch-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .swatch{
+    width:30px; height:30px; border-radius:9px; border:2px solid transparent; cursor:pointer;
+  }
+  .swatch.is-active{ border-color:var(--ink); }
+  .rule-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px; margin-bottom:10px;
+  }
+  .rule-card-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .rule-card-head span{ font-size:12px; font-weight:700; color:var(--ink-faint); }
+  .x-btn{ background:none; border:none; color:var(--ink-faint); font-size:13px; font-weight:700; }
+  .excl-grid{ display:flex; flex-wrap:wrap; gap:6px; }
+  .excl-chip{
+    font-size:12px; padding:6px 10px; border-radius:100px; border:1px solid var(--line); background:var(--surface); color:var(--ink-muted); font-weight:600;
+  }
+  .excl-chip.is-active{ background:#E8546B; border-color:#E8546B; color:#fff; }
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; }
+  .switch{ position:relative; width:44px; height:26px; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider{
+    position:absolute; inset:0; background:var(--line); border-radius:100px; transition:.15s;
+  }
+  .slider::before{
+    content:""; position:absolute; width:20px; height:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.15s;
+  }
+  input:checked + .slider{ background:var(--accent); }
+  input:checked + .slider::before{ transform:translateX(18px); }
+
+  .toast{
+    position:fixed; left:50%; bottom:100px; transform:translateX(-50%);
+    background:var(--ink); color:var(--bg);
+    padding:10px 18px; border-radius:100px; font-size:13px; font-weight:600;
+    z-index:120; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;
+  }
+  .toast.is-visible{ opacity:1; transform:translateX(-50%) translateY(-4px); }
+</style>
+
+<div class="bg-blobs" aria-hidden="true"><span></span><span></span><span></span></div>
+
+<div class="app" id="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="word">Paisa<em>Pilot</em></div>
+      <div class="tag">autopilot for your paisa</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">◐</button>
+    </div>
+  </div>
+
+  <!-- ===================== PAY TAB ===================== -->
+  <div class="screen" id="screen-pay">
+    <section>
+      <div class="section-label">How do I pay for this?</div>
+      <div class="search-wrap">
+        <input type="text" id="searchBox" placeholder="Search a category…" autocomplete="off">
+      </div>
+      <div class="chipgrid" id="chipsPrimary"></div>
+      <div class="chipgrid" id="chipsMore"></div>
+      <button class="more-toggle" id="moreToggle">Show more categories</button>
+    </section>
+
+    <section id="resultsSection" class="hidden">
+      <div class="section-label" id="resultCategoryLabel">Results</div>
+
+      <div class="amount-row">
+        <label for="amountInput">Amount</label>
+        <span class="prefix">₹</span>
+        <input type="number" id="amountInput" placeholder="e.g. 2000" inputmode="decimal">
+      </div>
+
+      <div class="fan" id="fanArea"></div>
+      <div class="detail-panel" id="detailPanel"></div>
+
+      <button class="rank-toggle" id="rankToggle">Show full ranking</button>
+      <div class="rank-list hidden" id="rankList"></div>
+    </section>
+
+    <div class="empty-state" id="emptyState">
+      Pick a category above — I'll rank every active card by real net value for that spend.
+    </div>
+  </div>
+
+  <!-- ===================== MY CARDS TAB ===================== -->
+  <div class="screen hidden" id="screen-cards">
+    <section>
+      <div class="section-label">Your Cards</div>
+      <div class="cards-grid" id="cardsGrid"></div>
+    </section>
+  </div>
+
+  <!-- ===================== SETTINGS TAB ===================== -->
+  <div class="screen hidden" id="screen-settings">
+    <section>
+      <div class="section-label">Appearance</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div>
+            <div class="label">Theme</div>
+            <div class="desc">System follows your phone's setting</div>
+          </div>
+          <div class="seg" id="themeSeg">
+            <button data-v="system">System</button>
+            <button data-v="light">Light</button>
+            <button data-v="dark">Dark</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Privacy &amp; Lock</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div>
+            <div class="label">App lock (PIN)</div>
+            <div class="desc" id="pinStatusDesc">No PIN set</div>
+          </div>
+          <button class="btn secondary" id="pinBtn">Set up</button>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:10px;">
+        <strong>Honest note:</strong> this PIN keeps out someone casually picking up your phone — it's a local screen lock, not encryption. Everything stays only in this browser's storage; nothing is sent anywhere.
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Data Freshness</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div>
+            <div class="label">Rates last reviewed</div>
+            <div class="desc" id="lastReviewDesc">—</div>
+          </div>
+          <button class="btn secondary" id="reviewBtn">Mark reviewed today</button>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:10px;">
+        Bank offers change often. This app doesn't auto-scrape bank sites (fragile, often against their ToS) — refresh rates yourself periodically, or ask me to help you research current terms and update a card in <strong>My Cards</strong>.
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Home Screen</div>
+      <div class="callout">
+        <strong>Add a shortcut:</strong> on iPhone, tap Share → <em>Add to Home Screen</em>. On Android Chrome, tap the ⋮ menu → <em>Add to Home screen</em> / <em>Install app</em>. PaisaPilot opens straight to this page — no app store needed.
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">About</div>
+      <div class="callout">
+        <strong>PaisaPilot</strong> — a private, on-device card-picker. Seeded from your own reward notes; edit anything under <strong>My Cards</strong> as terms change. Built for one person's wallet, not a financial product — always sanity-check a big purchase against your bank's current T&amp;Cs.
+      </div>
+    </section>
+  </div>
+
+  <div class="tabbar">
+    <button class="tab is-active" data-tab="pay">
+      <span>Pay</span>
+    </button>
+    <button class="tab" data-tab="cards">
+      <span>My Cards</span>
+    </button>
+    <button class="tab" data-tab="settings">
+      <span>Settings</span>
+    </button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     CATEGORIES
+  ============================================================ */
+  var CATEGORIES = [
+    {id:'food_delivery', label:'Food Delivery', group:'primary'},
+    {id:'dining', label:'Dining Out', group:'primary'},
+    {id:'instamart', label:'Quick Commerce', group:'primary'},
+    {id:'groceries', label:'Groceries', group:'primary'},
+    {id:'fuel', label:'Fuel', group:'primary'},
+    {id:'travel_booking', label:'Flights & Hotels', group:'primary'},
+    {id:'amazon', label:'Amazon.in', group:'primary'},
+    {id:'online_shopping', label:'Online Shopping', group:'primary'},
+    {id:'offline_retail', label:'Offline Retail', group:'primary'},
+    {id:'utilities', label:'Utility Bills', group:'primary'},
+    {id:'upi_scan', label:'UPI Scan & Pay', group:'primary'},
+    {id:'upi_checkout', label:'UPI Online Checkout', group:'primary'},
+    {id:'international', label:'International', group:'primary'},
+    {id:'hospitalization', label:'Hospitalization', group:'primary'},
+    {id:'movies', label:'Movies', group:'primary'},
+    {id:'adani', label:'Adani Ecosystem', group:'more'},
+    {id:'rent', label:'Rent', group:'more'},
+    {id:'insurance', label:'Insurance', group:'more'},
+    {id:'education', label:'Education Fees', group:'more'},
+    {id:'gold', label:'Gold / Jewellery', group:'more'},
+    {id:'govt', label:'Government / Tax', group:'more'},
+    {id:'wallet_load', label:'Wallet Top-up', group:'more'},
+    {id:'emi', label:'EMI Conversion', group:'more'},
+    {id:'gift_cards', label:'Gift Cards', group:'more'},
+    {id:'base', label:'Everything Else', group:'more'}
+  ];
+  var CAT_BY_ID = {};
+  CATEGORIES.forEach(function(c){ CAT_BY_ID[c.id] = c; });
+
+  var FORMAT_LABEL = {
+    statement:'Statement Credit', wallet:'Wallet Balance', points:'Reward Points',
+    discount:'Instant Discount', perks:'Non-cashback Perks'
+  };
+  var FORMAT_WEIGHT = { statement:4, wallet:3, discount:3, points:2, perks:0 };
+
+  var ROUTING_TIPS = {
+    food_delivery:'Default hierarchy: HDFC Swiggy BLCK (10%, capped) → Diners Privilege via SmartBuy on tough months.',
+    dining:'Swiggy Dineout via Swiggy BLCK first; BOB Eterna covers standalone dine-out once that cap is used.',
+    instamart:'HDFC Swiggy BLCK\'s 10% covers Instamart too — same shared ₹1,500/mo cap as Food & Dineout.',
+    fuel:'Default: RBL IndianOil XTRA at IOCL stations specifically — it earns nothing at non-IOCL pumps.',
+    amazon:'Default: Amazon Pay ICICI, 5% uncapped — hard to beat on Amazon.in itself.',
+    online_shopping:'If the merchant sells gift cards, check HDFC SmartBuy/Gyftr first — a voucher route can beat direct spend.',
+    travel_booking:'Route flights/hotels through HDFC SmartBuy or the card\'s own app (Scapia, ixigo) to actually earn the quoted rate — direct-to-airline bookings usually fall back to the base rate.',
+    utilities:'Order: Adani One ICICI (3%, Adani-only) → HDFC UPI RuPay via PayZapp (2%) → CRED IndusInd via CRED (1%).',
+    upi_scan:'UPI hierarchy — 1st: YES Kiwi RuPay (5%, active tier). 2nd: HDFC UPI RuPay (for groceries/PayZapp, 3%). Fallback: ixigo AU / Axis Neo RuPay.',
+    upi_checkout:'For online checkout via UPI: CRED IndusInd (5%, capped) usually beats generic RuPay UPI cards — redeem CRED points at their store/travel for full ₹1 value.',
+    international:'Use Scapia (0% forex + travel coins) or ixigo AU (0% forex) — avoid cards with a forex markup entirely for this.',
+    adani:'Adani One ICICI\'s 3% only pays out as Adani Reward Points, usable inside the Adani app — factor that lock-in in before counting on the full value.',
+    groceries:'HDFC UPI RuPay\'s 3% (via PayZapp/UPI) is usually the strongest dedicated grocery rate here.',
+    hospitalization:'No card here has a dedicated medical/hospital bonus — this ranks by base rate alone. Two things matter more than the % before you swipe: (1) many hospitals add a 1–2%+ card-payment surcharge on large bills, which can erase the reward outright — ask before paying, UPI/NEFT often avoids it. (2) redemption format matters more than rate on a bill this size — a travel-locked points card ranked "highest" may be less useful in hand than a lower-rate statement-credit or wallet card. If the bill pushes this month\'s spend past ₹20,000, IDFC FIRST Select\'s uncapped 10X (≈1.67%) tier applies to the extra. And if this is genuinely an emergency: pay first, optimize later.'
+  };
+
+  /* ============================================================
+     CARD THEME (gradient inspired by each card's real branding)
+  ============================================================ */
+  function grad(a,b){ return 'linear-gradient(135deg,'+a+','+b+')'; }
+
+  /* ============================================================
+     DEFAULT CARD DATA — seeded from the user's own reward notes
+  ============================================================ */
+  var DEFAULT_CARDS = [
+    {
+      id:'axis-burgundy-debit', bank:'Axis Bank', variant:'Burgundy Debit Card', network:'', type:'debit',
+      last4:'', active:true, colorA:'#6B2D45', colorB:'#3E1728', fg:'#F3E4E8',
+      baseRate:{rate:0, label:'No published per-swipe cashback', format:'perks'},
+      rules:[], exclusions:[],
+      annualFee:'', notes:'Premium lounge-access & milestone-reward debit card. Verify current milestone thresholds directly with Axis Burgundy — not a per-transaction cashback card.',
+      lastVerified:'2026-08-27'
+    },
+    {
+      id:'hdfc-imperia-debit', bank:'HDFC Bank', variant:'Imperia EasyShop Platinum Debit', network:'', type:'debit',
+      last4:'', active:true, colorA:'#C9CDD6', colorB:'#7C818C', fg:'#22262E',
+      baseRate:{rate:0, label:'0% outside eligible debit payments', format:'statement'},
+      rules:[
+        {cat:'utilities', rate:1, label:'1% on eligible billpay', cap:'Not specified — verify current cap', format:'statement', redemption:'Cashback to linked account', notes:''},
+        {cat:'upi_checkout', rate:1, label:'1% via PayZapp', cap:'Not specified — verify current cap', format:'statement', redemption:'Cashback to linked account', notes:'Only PayZapp / billpay / recharge earn — general debit swipes do not.'}
+      ],
+      exclusions:[],
+      annualFee:'', notes:'', lastVerified:'2026-08-27'
+    },
+    {
+      id:'hdfc-diners-privilege', bank:'HDFC Bank', variant:'Diners Club Privilege', network:'Diners Club', type:'credit',
+      last4:'', active:true, colorA:'#262220', colorB:'#4A3F1E', fg:'#F2E7C6',
+      baseRate:{rate:0.53, label:'4 RP / ₹150', format:'statement'},
+      rules:[
+        {cat:'food_delivery', rate:6.67, label:'5X RP on Swiggy/Zomato', cap:'2,500 bonus RP / month', format:'points', redemption:'₹0.50/RP via SmartBuy Travel, ₹0.20/RP statement', notes:''},
+        {cat:'travel_booking', rate:13.33, label:'10X RP via SmartBuy', cap:'4,000 bonus RP / month', format:'points', redemption:'₹0.50/RP via SmartBuy Travel', notes:'Must route through HDFC SmartBuy to earn 10X.'}
+      ],
+      exclusions:['emi'],
+      annualFee:'', notes:'Excludes cash advance and payment of the card\'s own fees from earning.', lastVerified:'2026-08-27'
+    },
+    {
+      id:'rbl-indianoil-xtra', bank:'RBL Bank', variant:'IndianOil XTRA', network:'', type:'credit',
+      last4:'', active:true, colorA:'#1B4F8C', colorB:'#C9622A', fg:'#FBF2E8',
+      baseRate:{rate:0, label:'Not specified — verify general spend rate', format:'points'},
+      rules:[
+        {cat:'fuel', rate:7.5, label:'7.5% effective value at IOCL', cap:'Not specified — verify current cap', format:'points', redemption:'Fuel Points, ₹0.50 each, redeemable at IndianOil', notes:'Only at IndianOil (IOCL) stations — other pumps earn nothing.'}
+      ],
+      exclusions:['utilities','insurance','rent','wallet_load'],
+      annualFee:'', notes:'', lastVerified:'2026-08-27'
+    },
+    {
+      id:'amazon-pay-icici', bank:'ICICI Bank', variant:'Amazon Pay (Prime Active)', network:'', type:'credit',
+      last4:'', active:true, colorA:'#1F3A5F', colorB:'#E8A33D', fg:'#FBF4E6',
+      baseRate:{rate:1, label:'1% everywhere else', format:'wallet'},
+      rules:[
+        {cat:'amazon', rate:5, label:'5% unlimited on Amazon.in', cap:'No cap', format:'wallet', redemption:'Amazon Pay Balance', notes:''},
+        {cat:'online_shopping', rate:2, label:'2% on Amazon Pay partner merchants', cap:'Not specified', format:'wallet', redemption:'Amazon Pay Balance', notes:'Only qualifying Amazon Pay partners — not all online shopping.'}
+      ],
+      exclusions:['fuel','utilities','international','rent','govt','education','gold','emi'],
+      annualFee:'', notes:'', lastVerified:'2026-08-27'
+    },
+    {
+      id:'hdfc-swiggy-blck', bank:'HDFC Bank', variant:'Swiggy BLCK', network:'', type:'credit',
+      last4:'', active:true, colorA:'#1A1A1A', colorB:'#FF6B3D', fg:'#FFEFE6',
+      baseRate:{rate:1, label:'1% on everything else', cap:'₹500 / month', format:'statement'},
+      rules:[
+        {cat:'food_delivery', rate:10, label:'10% Swiggy ecosystem', cap:'₹1,500/mo (shared: Food, Instamart, Dineout, Genie)', format:'statement', redemption:'Direct statement credit', notes:''},
+        {cat:'instamart', rate:10, label:'10% Swiggy ecosystem', cap:'₹1,500/mo (shared with Food, Dineout, Genie)', format:'statement', redemption:'Direct statement credit', notes:''},
+        {cat:'dining', rate:10, label:'10% via Swiggy Dineout', cap:'₹1,500/mo (shared cap)', format:'statement', redemption:'Direct statement credit', notes:''},
+        {cat:'online_shopping', rate:5, label:'5% top online platforms', cap:'₹1,500/mo combined', format:'statement', redemption:'Direct statement credit', notes:''}
+      ],
+      exclusions:['fuel','rent','wallet_load','govt','gold','emi'],
+      annualFee:'', notes:'', lastVerified:'2026-08-27'
+    },
+    {
+      id:'bob-eterna', bank:'Bank of Baroda', variant:'Eterna', network:'', type:'credit',
+      last4:'', active:true, colorA:'#7A1F2B', colorB:'#E8823A', fg:'#FDEDE0',
+      baseRate:{rate:0.75, label:'1 RP / ₹100', format:'points'},
+      rules:[
+        {cat:'online_shopping', rate:3.75, label:'5X RP', cap:'5,000 RP / month (~₹33k spend, shared)', format:'points', redemption:'₹0.25/RP statement or travel', notes:''},
+        {cat:'dining', rate:3.75, label:'5X RP', cap:'5,000 RP / month (shared)', format:'points', redemption:'₹0.25/RP statement or travel', notes:''},
+        {cat:'travel_booking', rate:3.75, label:'5X RP', cap:'5,000 RP / month (shared)', format:'points', redemption:'₹0.25/RP statement or travel', notes:''},
+        {cat:'movies', rate:3.75, label:'5X RP', cap:'5,000 RP / month (shared)', format:'points', redemption:'₹0.25/RP statement or travel', notes:''}
+      ],
+      exclusions:['fuel','utilities','insurance','groceries','wallet_load','govt'],
+      annualFee:'', notes:'Also excludes "fast food" specifically even where Dining is rewarded — verify exact merchant list.', lastVerified:'2026-08-27'
+    },
+    {
+      id:'idfc-first-select', bank:'IDFC FIRST Bank', variant:'FIRST Select', network:'', type:'credit',
+      last4:'', active:true, colorA:'#7A1128', colorB:'#B23A4E', fg:'#FBE3E6',
+      baseRate:{rate:0.50, label:'3X RP (below ₹20k/month spend)', format:'points'},
+      rules:[
+        {cat:'utilities', rate:0.17, label:'1X RP', cap:'No cap', format:'points', redemption:'₹0.25/RP', notes:''},
+        {cat:'rent', rate:0.17, label:'1X RP', cap:'No cap', format:'points', redemption:'₹0.25/RP', notes:''}
+      ],
+      exclusions:['fuel','emi'],
+      annualFee:'', notes:'Above ₹20,000 spend/month, incremental spend earns 10X RP (≈1.67%), uncapped — track your monthly total to catch this tier.', lastVerified:'2026-08-27'
+    },
+    {
+      id:'axis-select', bank:'Axis Bank', variant:'Select', network:'', type:'credit',
+      last4:'', active:true, colorA:'#5C1F3D', colorB:'#8C3E63', fg:'#F7E4EE',
+      baseRate:{rate:1, label:'1X EDGE RP', format:'points'},
+      rules:[
+        {cat:'offline_retail', rate:2, label:'2X EDGE RP', cap:'₹20,000 spend / month', format:'points', redemption:'₹0.20/RP statement', notes:''}
+      ],
+      exclusions:['fuel','utilities','rent','wallet_load','govt','insurance','gold'],
+      annualFee:'', notes:'Also excludes telecom spends from earning.', lastVerified:'2026-08-27'
+    },
+    {
+      id:'adani-one-icici', bank:'ICICI Bank', variant:'Adani One Platinum', network:'', type:'credit',
+      last4:'', active:true, colorA:'#145C3A', colorB:'#E8823A', fg:'#EAF7EE',
+      baseRate:{rate:1, label:'1% base domestic spend', format:'points'},
+      rules:[
+        {cat:'adani', rate:3, label:'3% Adani ecosystem', cap:'Not specified', format:'points', redemption:'Adani Reward Points — usable only inside the Adani app', notes:'Covers Gas, Electricity, Airports, Trainman.'},
+        {cat:'international', rate:1.5, label:'1.5% international', cap:'Not specified', format:'points', redemption:'Adani Reward Points — Adani app only', notes:''},
+        {cat:'utilities', rate:0.5, label:'0.5% utilities', cap:'Not specified', format:'points', redemption:'Adani Reward Points — Adani app only', notes:''},
+        {cat:'insurance', rate:0.5, label:'0.5% insurance', cap:'Not specified', format:'points', redemption:'Adani Reward Points — Adani app only', notes:''}
+      ],
+      exclusions:['emi'],
+      annualFee:'', notes:'All rewards are Adani Points, redeemable only within the Adani ecosystem app — heavily discount this vs. cash-equivalent formats.', lastVerified:'2026-08-27'
+    },
+    {
+      id:'scapia-federal', bank:'Federal Bank', variant:'Scapia', network:'', type:'credit',
+      last4:'', active:true, colorA:'#0E7C7B', colorB:'#6C4FA0', fg:'#EAFBF8',
+      baseRate:{rate:2, label:'2% general credit card spends', format:'points'},
+      rules:[
+        {cat:'travel_booking', rate:4, label:'4% via Scapia app', cap:'Not specified', format:'points', redemption:'Travel bookings only, inside Scapia app', notes:''},
+        {cat:'upi_scan', rate:1, label:'1% UPI spends', cap:'Min transaction ₹500', format:'points', redemption:'Travel bookings only, inside Scapia app', notes:''},
+        {cat:'upi_checkout', rate:1, label:'1% UPI spends', cap:'Min transaction ₹500', format:'points', redemption:'Travel bookings only, inside Scapia app', notes:''}
+      ],
+      exclusions:['rent','education','gift_cards','fuel','govt','wallet_load'],
+      annualFee:'', notes:'0% forex markup on every spend — strong default for anything international even where the point rate is unremarkable. Points are travel-locked, factor that into the real value.', lastVerified:'2026-08-27'
+    },
+    {
+      id:'axis-neo-rupay', bank:'Axis Bank', variant:'Neo RuPay (UPI-enabled)', network:'RuPay', type:'credit',
+      last4:'', active:true, colorA:'#6B2D45', colorB:'#A85C78', fg:'#FBE9EF',
+      baseRate:{rate:1.5, label:'~1.5% base & UPI (6 EDGE RP/₹200)', format:'points'},
+      rules:[
+        {cat:'upi_scan', rate:1.5, label:'~1.5% UPI', cap:'Not specified', format:'points', redemption:'₹0.20/RP statement', notes:''},
+        {cat:'upi_checkout', rate:1.5, label:'~1.5% UPI', cap:'Not specified', format:'points', redemption:'₹0.20/RP statement', notes:''}
+      ],
+      exclusions:['fuel','utilities','insurance','wallet_load','rent','govt','education'],
+      annualFee:'', notes:'', lastVerified:'2026-08-27'
+    },
+    {
+      id:'yes-kiwi-rupay', bank:'YES Bank', variant:'Kiwi RuPay (UPI-enabled)', network:'RuPay', type:'credit',
+      last4:'', active:true, colorA:'#4C8C2E', colorB:'#9ACD4C', fg:'#F3FBE9',
+      baseRate:{rate:0, label:'No base rate outside UPI Scan & Pay', format:'statement'},
+      rules:[
+        {cat:'upi_scan', rate:5, label:'5% retroactive cashback (Neon tier)', cap:'Not specified — verify current cap', format:'statement', redemption:'Credited direct to bank account (4 Kiwis = ₹1)', notes:'Requires active Neon Membership tier (milestone-based).'}
+      ],
+      exclusions:['utilities','gold','rent','insurance','govt'],
+      annualFee:'', notes:'Best-in-class format here: cash straight to your bank account, not points.', lastVerified:'2026-08-27'
+    },
+    {
+      id:'hdfc-upi-rupay', bank:'HDFC Bank', variant:'UPI RuPay Credit Card', network:'RuPay', type:'credit',
+      last4:'', active:true, colorA:'#1F3A6B', colorB:'#C9463D', fg:'#EAF0FB',
+      baseRate:{rate:1, label:'1% other UPI spends', cap:'500 pts / month', format:'statement'},
+      rules:[
+        {cat:'groceries', rate:3, label:'3% CashPoints', cap:'500 pts / month', format:'statement', redemption:'₹0.25/pt statement credit, min txn ₹100', notes:''},
+        {cat:'dining', rate:3, label:'3% CashPoints (incl. PayZapp)', cap:'500 pts / month (shared)', format:'statement', redemption:'₹0.25/pt statement credit, min txn ₹100', notes:''},
+        {cat:'utilities', rate:2, label:'2% CashPoints', cap:'500 pts / month', format:'statement', redemption:'₹0.25/pt statement credit, min txn ₹100', notes:''},
+        {cat:'upi_checkout', rate:1, label:'1% other UPI spends', cap:'500 pts / month', format:'statement', redemption:'₹0.25/pt statement credit, min txn ₹100', notes:''}
+      ],
+      exclusions:['rent','fuel','insurance','wallet_load','emi','govt','education'],
+      annualFee:'', notes:'Minimum transaction ₹100 to earn.', lastVerified:'2026-08-27'
+    },
+    {
+      id:'cred-indusind-rupay', bank:'IndusInd Bank', variant:'CRED RuPay', network:'RuPay', type:'credit',
+      last4:'', active:true, colorA:'#17171A', colorB:'#C9A24A', fg:'#F5EFDD',
+      baseRate:{rate:1, label:'1% offline / utilities / scan via CRED', cap:'500 pts / month', format:'points'},
+      rules:[
+        {cat:'online_shopping', rate:5, label:'5% via CRED Pay', cap:'5,000 pts / month', format:'points', redemption:'₹1/pt at CRED Store/Travel, ₹0.50/pt on bills', notes:''},
+        {cat:'travel_booking', rate:5, label:'5% via CRED Pay', cap:'5,000 pts / month (shared)', format:'points', redemption:'₹1/pt at CRED Store/Travel', notes:''},
+        {cat:'upi_checkout', rate:5, label:'5% via CRED Pay/UPI', cap:'5,000 pts / month (shared)', format:'points', redemption:'₹1/pt at CRED Store/Travel', notes:''},
+        {cat:'offline_retail', rate:1, label:'1% via CRED', cap:'500 pts / month', format:'points', redemption:'₹0.50/pt on bill payments', notes:''},
+        {cat:'utilities', rate:1, label:'1% via CRED', cap:'500 pts / month', format:'points', redemption:'₹0.50/pt on bill payments', notes:''},
+        {cat:'upi_scan', rate:1, label:'1% Scan & Pay via CRED', cap:'500 pts / month', format:'points', redemption:'₹0.50/pt on bill payments', notes:''}
+      ],
+      exclusions:['rent','fuel','wallet_load'],
+      annualFee:'', notes:'Must route through the CRED app to earn — the card alone at a random terminal earns nothing.', lastVerified:'2026-08-27'
+    },
+    {
+      id:'ixigo-au-bank', bank:'AU Small Finance Bank', variant:'ixigo Credit Card', network:'', type:'credit',
+      last4:'', active:true, colorA:'#1B6FA8', colorB:'#3EAE7A', fg:'#EAF6F2',
+      baseRate:{rate:0, label:'No published flat base rate', format:'points'},
+      rules:[
+        {cat:'travel_booking', rate:10, label:'10% instant discount via ixigo app', cap:'Not specified', format:'discount', redemption:'Instant discount at checkout — ixigo Flights/Hotels/Buses only', notes:''},
+        {cat:'online_shopping', rate:2.5, label:'2.5% online spends', cap:'Not specified', format:'points', redemption:'₹0.20/RP approx.', notes:''},
+        {cat:'upi_checkout', rate:2.5, label:'2.5% UPI spends', cap:'Not specified', format:'points', redemption:'₹0.20/RP approx.', notes:''},
+        {cat:'offline_retail', rate:1.25, label:'1.25% offline spends', cap:'Not specified', format:'points', redemption:'₹0.20/RP approx.', notes:''}
+      ],
+      exclusions:['fuel','rent','insurance','wallet_load','utilities'],
+      annualFee:'', notes:'0% forex markup — good default for international spends even though RP isn\'t earned on them.', lastVerified:'2026-08-27'
+    }
+  ];
+
+  /* ============================================================
+     STATE
+  ============================================================ */
+  var STORAGE_KEY = 'paisapilot_v1';
+  var state = null;
+
+  function defaultState(){
+    return {
+      cards: JSON.parse(JSON.stringify(DEFAULT_CARDS)),
+      settings: { theme:'system', pinHash:null, lastReview: todayISO() }
+    };
+  }
+  function todayISO(){
+    var d = new Date();
+    return d.toISOString().slice(0,10);
+  }
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return defaultState();
+      var parsed = JSON.parse(raw);
+      if(!parsed || !parsed.cards) return defaultState();
+      return parsed;
+    }catch(e){ return defaultState(); }
+  }
+  function saveState(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(e){ /* storage unavailable — app still works for this session */ }
+  }
+
+  state = loadState();
+
+  /* ============================================================
+     THEME
+  ============================================================ */
+  function applyTheme(){
+    var t = state.settings.theme || 'system';
+    if(t === 'system'){ document.documentElement.removeAttribute('data-theme'); }
+    else{ document.documentElement.setAttribute('data-theme', t); }
+    var segBtns = document.querySelectorAll('#themeSeg button');
+    segBtns.forEach(function(b){ b.classList.toggle('is-active', b.dataset.v === t); });
+  }
+  document.getElementById('themeBtn').addEventListener('click', function(){
+    var order = ['system','light','dark'];
+    var idx = order.indexOf(state.settings.theme || 'system');
+    state.settings.theme = order[(idx+1) % order.length];
+    saveState(); applyTheme();
+    showToast('Theme: ' + state.settings.theme);
+  });
+  document.getElementById('themeSeg').addEventListener('click', function(e){
+    var btn = e.target.closest('button'); if(!btn) return;
+    state.settings.theme = btn.dataset.v;
+    saveState(); applyTheme();
+  });
+
+  /* ============================================================
+     TABS
+  ============================================================ */
+  var tabs = document.querySelectorAll('.tab');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('is-active'); });
+      tab.classList.add('is-active');
+      ['pay','cards','settings'].forEach(function(name){
+        document.getElementById('screen-'+name).classList.toggle('hidden', name !== tab.dataset.tab);
+      });
+      if(tab.dataset.tab === 'cards') renderCardsGrid();
+      if(tab.dataset.tab === 'settings') renderSettings();
+    });
+  });
+
+  /* ============================================================
+     CHIPS / SEARCH
+  ============================================================ */
+  var activeCat = null;
+  var moreOpen = false;
+
+  function renderChips(){
+    var primaryWrap = document.getElementById('chipsPrimary');
+    var moreWrap = document.getElementById('chipsMore');
+    primaryWrap.innerHTML = '';
+    moreWrap.innerHTML = '';
+    CATEGORIES.forEach(function(c){
+      var btn = document.createElement('button');
+      btn.className = 'chip';
+      btn.textContent = c.label;
+      btn.dataset.cat = c.id;
+      btn.addEventListener('click', function(){ selectCategory(c.id); });
+      if(c.group === 'primary') primaryWrap.appendChild(btn);
+      else moreWrap.appendChild(btn);
+    });
+    applyChipVisibility();
+  }
+  function applyChipVisibility(){
+    var q = document.getElementById('searchBox').value.trim().toLowerCase();
+    document.querySelectorAll('.chip').forEach(function(chip){
+      var isMore = chip.parentElement && chip.parentElement.id === 'chipsMore';
+      var matches = !q || chip.textContent.toLowerCase().indexOf(q) !== -1;
+      var visible = isMore ? (matches && (moreOpen || q.length > 0)) : matches;
+      chip.classList.toggle('is-hidden', !visible);
+    });
+    document.getElementById('chipsMore').classList.toggle('hidden', !(moreOpen || q.length > 0));
+  }
+  document.getElementById('moreToggle').addEventListener('click', function(){
+    moreOpen = !moreOpen;
+    this.textContent = moreOpen ? 'Hide extra categories' : 'Show more categories';
+    applyChipVisibility();
+  });
+  document.getElementById('searchBox').addEventListener('input', applyChipVisibility);
+
+  function selectCategory(catId){
+    activeCat = catId;
+    document.querySelectorAll('.chip').forEach(function(c){
+      c.classList.toggle('is-active', c.dataset.cat === catId);
+    });
+    document.getElementById('emptyState').classList.add('hidden');
+    document.getElementById('resultsSection').classList.remove('hidden');
+    document.getElementById('resultCategoryLabel').textContent = 'Best card for ' + CAT_BY_ID[catId].label;
+    renderResults();
+  }
+
+  document.getElementById('amountInput').addEventListener('input', renderResults);
+  document.getElementById('rankToggle').addEventListener('click', function(){
+    var list = document.getElementById('rankList');
+    var open = list.classList.toggle('hidden');
+    this.textContent = open ? 'Show full ranking' : 'Hide full ranking';
+  });
+
+  /* ============================================================
+     RANKING ENGINE
+  ============================================================ */
+  function computeRanking(catId){
+    var amount = parseFloat(document.getElementById('amountInput').value) || null;
+    var results = state.cards.filter(function(c){ return c.active; }).map(function(card){
+      var excluded = card.exclusions.indexOf(catId) !== -1;
+      var rule = null;
+      if(!excluded){
+        rule = card.rules.filter(function(r){ return r.cat === catId; })[0] || null;
+      }
+      var source = rule || card.baseRate;
+      var usedBase = !rule;
+      var rate = excluded ? 0 : (source.rate || 0);
+      return {
+        card: card,
+        excluded: excluded,
+        usedBase: usedBase,
+        rate: rate,
+        label: source.label,
+        cap: rule ? rule.cap : (usedBase && card.baseRate.cap ? card.baseRate.cap : null),
+        format: source.format || 'points',
+        redemption: rule ? rule.redemption : null,
+        notes: rule ? rule.notes : '',
+        amountValue: (amount && rate) ? (amount * rate / 100) : null
+      };
+    });
+    results.sort(function(a,b){
+      if(a.excluded !== b.excluded) return a.excluded ? 1 : -1;
+      if(b.rate !== a.rate) return b.rate - a.rate;
+      return (FORMAT_WEIGHT[b.format]||0) - (FORMAT_WEIGHT[a.format]||0);
+    });
+    return results;
+  }
+
+  function cardVisualHTML(card, opts){
+    opts = opts || {};
+    var small = opts.small ? ' is-small' : '';
+    var pan = card.last4 ? ('•••• •••• •••• ' + card.last4) : '•••• •••• •••• ····';
+    return '' +
+      '<div class="card-visual'+small+'" style="background:'+grad(card.colorA, card.colorB)+'; color:'+card.fg+';">' +
+        '<div class="row">' +
+          '<div><div class="bank">'+esc(card.bank)+'</div></div>' +
+          '<div class="type-badge">'+ (card.type==='debit'?'Debit':'Credit') +'</div>' +
+        '</div>' +
+        '<div class="chip-glyph"></div>' +
+        '<div>' +
+          '<div class="pan mono">'+pan+'</div>' +
+          '<div class="row" style="margin-top:6px;">' +
+            '<div class="variant">'+esc(card.variant)+'</div>' +
+            '<div class="network">'+esc(card.network||'')+'</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function esc(s){
+    return String(s==null?'':s).replace(/[&<>"']/g, function(m){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
+    });
+  }
+  function fmtPct(n){ return (Math.round(n*100)/100).toString() + '%'; }
+  function fmtRupee(n){ return '₹' + Math.round(n).toLocaleString('en-IN'); }
+
+  function renderResults(){
+    if(!activeCat) return;
+    var ranked = computeRanking(activeCat);
+    var usable = ranked.filter(function(r){ return !r.excluded; });
+    var top = usable[0];
+    var backup = usable[1];
+
+    var fan = document.getElementById('fanArea');
+    var panel = document.getElementById('detailPanel');
+
+    if(!top || top.rate === 0){
+      fan.innerHTML = '<div class="empty-state">No active card has a specific rate for this category — everything falls to base rate or is excluded. Check <strong>My Cards</strong> to fill this in.</div>';
+      panel.innerHTML = '';
+      document.getElementById('rankToggle').classList.add('hidden');
+      document.getElementById('rankList').classList.add('hidden');
+      return;
+    }
+    document.getElementById('rankToggle').classList.remove('hidden');
+
+    fan.innerHTML =
+      '<div class="recommend-badge"><span class="dot"></span>Recommended</div>' +
+      '<div class="result-card">' + cardVisualHTML(top.card) + '</div>';
+
+    var routingTip = ROUTING_TIPS[activeCat] || 'Pay directly with this card — no special routing needed for this category.';
+
+    var rows = [];
+    rows.push(kv('Net Reward Value',
+      '<span class="rate num">'+fmtPct(top.rate)+'</span>' +
+      (top.amountValue ? '<span class="sub num">≈ '+fmtRupee(top.amountValue)+' back</span>' : '<span class="sub">'+esc(top.label)+'</span>')
+    , true));
+    rows.push(kv('Reward Format', '<span class="format-pill">'+FORMAT_LABEL[top.format]+'</span>' + (top.usedBase ? '<span class="sub">Base rate — no category-specific bonus found</span>' : '')));
+    rows.push(kv('Monthly Cap', top.cap ? ('<span class="cap-pill">'+esc(top.cap)+'</span>') : '<span class="sub">No cap specified</span>'));
+    if(top.redemption) rows.push(kv('Redemption', top.redemption));
+    var exclNote = (top.card.notes ? top.card.notes : '') || 'No notable exclusions on this route.';
+    rows.push(kv('Notes / Exclusions', esc(exclNote)));
+    rows.push(kv('Backup Card', backup ? (esc(backup.card.bank+' '+backup.card.variant) + ' <span class="sub num">'+fmtPct(backup.rate)+'</span>') : '<span class="sub">None active</span>'));
+    rows.push(kv('Routing Method', esc(routingTip)));
+
+    panel.innerHTML = rows.join('');
+
+    var rankList = document.getElementById('rankList');
+    rankList.innerHTML = ranked.map(function(r, i){
+      return '<div class="rank-row'+(r.excluded?' excluded':'')+'">' +
+        '<div><div class="name">'+(i+1)+'. '+esc(r.card.bank+' '+r.card.variant)+'</div>' +
+        '<div class="sub">'+(r.excluded ? 'Excluded for this category' : esc(r.label))+'</div></div>' +
+        '<div class="rate">'+(r.excluded?'—':fmtPct(r.rate))+'</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function kv(label, valueHtml, big){
+    return '<div class="kv-row"><div class="kv-label">'+label+'</div><div class="kv-value'+(big?' rate':'')+'">'+valueHtml+'</div></div>';
+  }
+
+  /* ============================================================
+     MY CARDS
+  ============================================================ */
+  var PALETTE_CHOICES = [
+    ['#6B2D45','#3E1728'], ['#C9CDD6','#7C818C'], ['#262220','#4A3F1E'], ['#1B4F8C','#C9622A'],
+    ['#1F3A5F','#E8A33D'], ['#1A1A1A','#FF6B3D'], ['#7A1F2B','#E8823A'], ['#7A1128','#B23A4E'],
+    ['#5C1F3D','#8C3E63'], ['#145C3A','#E8823A'], ['#0E7C7B','#6C4FA0'], ['#4C8C2E','#9ACD4C'],
+    ['#1F3A6B','#C9463D'], ['#17171A','#C9A24A'], ['#1B6FA8','#3EAE7A'], ['#3C3160','#8177C9']
+  ];
+
+  function renderCardsGrid(){
+    var grid = document.getElementById('cardsGrid');
+    grid.innerHTML = '';
+    state.cards.forEach(function(card){
+      var wrap = document.createElement('button');
+      wrap.className = 'card-tile';
+      wrap.innerHTML = cardVisualHTML(card, {small:true}) +
+        '<div class="meta"><strong>'+esc(card.bank)+'</strong> · '+(card.active?'Active':'Inactive')+'</div>';
+      wrap.addEventListener('click', function(){ openCardEditor(card.id); });
+      grid.appendChild(wrap);
+    });
+    var addTile = document.createElement('button');
+    addTile.className = 'add-card-tile';
+    addTile.style.gridColumn = '1 / -1';
+    addTile.textContent = '+ Add a card';
+    addTile.addEventListener('click', function(){ openCardEditor(null); });
+    grid.appendChild(addTile);
+  }
+
+  var modalRoot = null;
+  function closeModal(){
+    if(modalRoot){ modalRoot.remove(); modalRoot = null; }
+  }
+
+  function openCardEditor(cardId){
+    var isNew = !cardId;
+    var card = isNew ? {
+      id: 'card_' + Date.now(),
+      bank:'', variant:'', network:'', type:'credit', last4:'', active:true,
+      colorA: PALETTE_CHOICES[0][0], colorB: PALETTE_CHOICES[0][1], fg:'#FFFFFF',
+      baseRate:{rate:0, label:'', format:'points'},
+      rules:[], exclusions:[], annualFee:'', notes:'', lastVerified: todayISO()
+    } : JSON.parse(JSON.stringify(state.cards.filter(function(c){return c.id===cardId;})[0]));
+
+    var backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    backdrop.addEventListener('click', function(e){ if(e.target === backdrop) closeModal(); });
+
+    var modal = document.createElement('div');
+    modal.className = 'modal';
+
+    modal.innerHTML = buildEditorHTML(card, isNew);
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    modalRoot = backdrop;
+
+    wireEditor(modal, card, isNew);
+  }
+
+  function buildEditorHTML(card, isNew){
+    var swatches = PALETTE_CHOICES.map(function(pair, i){
+      var isActive = pair[0] === card.colorA;
+      return '<div class="swatch'+(isActive?' is-active':'')+'" data-a="'+pair[0]+'" data-b="'+pair[1]+'" style="background:'+grad(pair[0],pair[1])+';"></div>';
+    }).join('');
+
+    var rulesHTML = card.rules.map(function(r, idx){ return ruleCardHTML(r, idx); }).join('');
+
+    var exclHTML = CATEGORIES.map(function(c){
+      var on = card.exclusions.indexOf(c.id) !== -1;
+      return '<button type="button" class="excl-chip'+(on?' is-active':'')+'" data-cat="'+c.id+'">'+c.label+'</button>';
+    }).join('');
+
+    return '' +
+      '<div class="modal-handle"></div>' +
+      '<div id="cardPreview" style="max-width:260px;margin:0 auto 18px;">'+cardVisualHTML(card)+'</div>' +
+
+      '<div class="field-row">' +
+        '<div class="field"><label>Bank</label><input id="f-bank" value="'+esc(card.bank)+'" placeholder="e.g. HDFC Bank"></div>' +
+        '<div class="field"><label>Type</label><select id="f-type"><option value="credit"'+(card.type==='credit'?' selected':'')+'>Credit</option><option value="debit"'+(card.type==='debit'?' selected':'')+'>Debit</option></select></div>' +
+      '</div>' +
+      '<div class="field"><label>Card Variant</label><input id="f-variant" value="'+esc(card.variant)+'" placeholder="e.g. Diners Club Privilege"></div>' +
+      '<div class="field-row">' +
+        '<div class="field"><label>Network</label><input id="f-network" value="'+esc(card.network)+'" placeholder="Visa, RuPay…"></div>' +
+        '<div class="field"><label>Last 4 digits</label><input id="f-last4" maxlength="4" inputmode="numeric" value="'+esc(card.last4)+'" placeholder="0000"></div>' +
+      '</div>' +
+      '<div class="field"><label>Card Color</label><div class="swatch-row" id="f-swatches">'+swatches+'</div></div>' +
+
+      '<div class="field toggle-row">' +
+        '<label style="text-transform:none;font-size:14px;color:var(--ink);">Active (shown in Pay results)</label>' +
+        '<label class="switch"><input type="checkbox" id="f-active" '+(card.active?'checked':'')+'><span class="slider"></span></label>' +
+      '</div>' +
+
+      '<div class="section-label" style="margin-top:14px;">Base Rate (fallback)</div>' +
+      '<div class="field-row">' +
+        '<div class="field"><label>Rate %</label><input id="f-base-rate" type="number" step="0.01" value="'+card.baseRate.rate+'"></div>' +
+        '<div class="field"><label>Format</label><select id="f-base-format">'+formatOptions(card.baseRate.format)+'</select></div>' +
+      '</div>' +
+      '<div class="field"><label>Base rate label / note</label><input id="f-base-label" value="'+esc(card.baseRate.label||'')+'" placeholder="e.g. 1% on everything else"></div>' +
+
+      '<div class="section-label" style="margin-top:14px;">Category Bonus Rules</div>' +
+      '<div id="rulesWrap">'+rulesHTML+'</div>' +
+      '<button type="button" class="btn secondary" id="addRuleBtn" style="margin-bottom:6px;">+ Add category rule</button>' +
+
+      '<div class="section-label" style="margin-top:14px;">Excluded Categories</div>' +
+      '<div class="excl-grid" id="exclGrid">'+exclHTML+'</div>' +
+
+      '<div class="section-label" style="margin-top:14px;">Notes &amp; Fee</div>' +
+      '<div class="field"><label>Annual fee / waiver note</label><input id="f-fee" value="'+esc(card.annualFee)+'" placeholder="e.g. ₹10,000 + GST, waived above ₹8L spend/yr"></div>' +
+      '<div class="field"><label>General notes</label><textarea id="f-notes">'+esc(card.notes)+'</textarea></div>' +
+
+      '<div style="display:flex;gap:10px;margin-top:18px;">' +
+        (isNew ? '' : '<button type="button" class="btn danger" id="deleteBtn">Delete</button>') +
+        '<button type="button" class="btn secondary" id="cancelBtn" style="flex:1;">Cancel</button>' +
+        '<button type="button" class="btn" id="saveBtn" style="flex:1;">Save card</button>' +
+      '</div>';
+  }
+
+  function formatOptions(selected){
+    return Object.keys(FORMAT_LABEL).map(function(k){
+      return '<option value="'+k+'"'+(k===selected?' selected':'')+'>'+FORMAT_LABEL[k]+'</option>';
+    }).join('');
+  }
+
+  function ruleCardHTML(r, idx){
+    var catOptions = CATEGORIES.map(function(c){
+      return '<option value="'+c.id+'"'+(c.id===r.cat?' selected':'')+'>'+c.label+'</option>';
+    }).join('');
+    return '' +
+      '<div class="rule-card" data-idx="'+idx+'">' +
+        '<div class="rule-card-head"><span>Rule '+(idx+1)+'</span><button type="button" class="x-btn" data-remove="'+idx+'">Remove</button></div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label>Category</label><select class="r-cat">'+catOptions+'</select></div>' +
+          '<div class="field"><label>Rate %</label><input class="r-rate" type="number" step="0.01" value="'+(r.rate||0)+'"></div>' +
+        '</div>' +
+        '<div class="field"><label>Label</label><input class="r-label" value="'+esc(r.label||'')+'" placeholder="e.g. 10X RP on dining"></div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label>Cap</label><input class="r-cap" value="'+esc(r.cap||'')+'" placeholder="e.g. 2,500 RP/mo"></div>' +
+          '<div class="field"><label>Format</label><select class="r-format">'+formatOptions(r.format)+'</select></div>' +
+        '</div>' +
+        '<div class="field"><label>Redemption</label><input class="r-redemption" value="'+esc(r.redemption||'')+'" placeholder="e.g. ₹0.25/pt statement credit"></div>' +
+      '</div>';
+  }
+
+  function wireEditor(modal, card, isNew){
+    modal.querySelectorAll('#f-swatches .swatch').forEach(function(sw){
+      sw.addEventListener('click', function(){
+        modal.querySelectorAll('#f-swatches .swatch').forEach(function(s){ s.classList.remove('is-active'); });
+        sw.classList.add('is-active');
+        card.colorA = sw.dataset.a; card.colorB = sw.dataset.b;
+        document.getElementById('cardPreview').innerHTML = cardVisualHTML(Object.assign({}, card, {
+          bank: modal.querySelector('#f-bank').value, variant: modal.querySelector('#f-variant').value,
+          network: modal.querySelector('#f-network').value, last4: modal.querySelector('#f-last4').value,
+          type: modal.querySelector('#f-type').value
+        }));
+      });
+    });
+    ['f-bank','f-variant','f-network','f-last4','f-type'].forEach(function(id){
+      modal.querySelector('#'+id).addEventListener('input', function(){
+        document.getElementById('cardPreview').innerHTML = cardVisualHTML(Object.assign({}, card, {
+          bank: modal.querySelector('#f-bank').value, variant: modal.querySelector('#f-variant').value,
+          network: modal.querySelector('#f-network').value, last4: modal.querySelector('#f-last4').value,
+          type: modal.querySelector('#f-type').value
+        }));
+      });
+    });
+
+    modal.querySelector('#addRuleBtn').addEventListener('click', function(){
+      card.rules.push({cat:'base', rate:0, label:'', cap:'', format:'points', redemption:'', notes:''});
+      refreshRules();
+    });
+    modal.querySelector('#rulesWrap').addEventListener('click', function(e){
+      var rm = e.target.closest('[data-remove]');
+      if(rm){ card.rules.splice(parseInt(rm.dataset.remove,10),1); refreshRules(); }
+    });
+    function refreshRules(){
+      modal.querySelector('#rulesWrap').innerHTML = card.rules.map(ruleCardHTML).join('');
+    }
+
+    modal.querySelector('#exclGrid').addEventListener('click', function(e){
+      var chip = e.target.closest('.excl-chip'); if(!chip) return;
+      var cat = chip.dataset.cat;
+      var idx = card.exclusions.indexOf(cat);
+      if(idx === -1) card.exclusions.push(cat); else card.exclusions.splice(idx,1);
+      chip.classList.toggle('is-active');
+    });
+
+    modal.querySelector('#cancelBtn').addEventListener('click', closeModal);
+
+    if(!isNew){
+      var delBtn = modal.querySelector('#deleteBtn');
+      if(delBtn){
+        delBtn.addEventListener('click', function(){
+          if(confirm('Remove '+card.bank+' '+card.variant+'? This can\'t be undone.')){
+            state.cards = state.cards.filter(function(c){ return c.id !== card.id; });
+            saveState(); closeModal(); renderCardsGrid();
+            showToast('Card removed');
+          }
+        });
+      }
+    }
+
+    modal.querySelector('#saveBtn').addEventListener('click', function(){
+      card.bank = modal.querySelector('#f-bank').value.trim();
+      card.variant = modal.querySelector('#f-variant').value.trim();
+      card.network = modal.querySelector('#f-network').value.trim();
+      card.type = modal.querySelector('#f-type').value;
+      card.last4 = modal.querySelector('#f-last4').value.trim().slice(0,4);
+      card.active = modal.querySelector('#f-active').checked;
+      card.baseRate.rate = parseFloat(modal.querySelector('#f-base-rate').value) || 0;
+      card.baseRate.format = modal.querySelector('#f-base-format').value;
+      card.baseRate.label = modal.querySelector('#f-base-label').value.trim();
+      card.annualFee = modal.querySelector('#f-fee').value.trim();
+      card.notes = modal.querySelector('#f-notes').value.trim();
+      card.lastVerified = todayISO();
+
+      var ruleEls = modal.querySelectorAll('#rulesWrap .rule-card');
+      card.rules = Array.prototype.map.call(ruleEls, function(el){
+        return {
+          cat: el.querySelector('.r-cat').value,
+          rate: parseFloat(el.querySelector('.r-rate').value) || 0,
+          label: el.querySelector('.r-label').value.trim(),
+          cap: el.querySelector('.r-cap').value.trim(),
+          format: el.querySelector('.r-format').value,
+          redemption: el.querySelector('.r-redemption').value.trim(),
+          notes: ''
+        };
+      });
+
+      if(!card.bank){ alert('Bank name is required.'); return; }
+
+      var existingIdx = state.cards.findIndex(function(c){ return c.id === card.id; });
+      if(existingIdx === -1) state.cards.push(card);
+      else state.cards[existingIdx] = card;
+
+      saveState(); closeModal(); renderCardsGrid();
+      showToast('Card saved');
+      if(activeCat) renderResults();
+    });
+  }
+
+  /* ============================================================
+     SETTINGS
+  ============================================================ */
+  function renderSettings(){
+    document.getElementById('lastReviewDesc').textContent = state.settings.lastReview
+      ? ('Last marked reviewed: ' + state.settings.lastReview) : 'Never marked reviewed';
+    document.getElementById('pinStatusDesc').textContent = state.settings.pinHash ? 'PIN is set' : 'No PIN set';
+    document.getElementById('pinBtn').textContent = state.settings.pinHash ? 'Change / remove' : 'Set up';
+  }
+  document.getElementById('reviewBtn').addEventListener('click', function(){
+    state.settings.lastReview = todayISO();
+    saveState(); renderSettings();
+    showToast('Marked reviewed today');
+  });
+
+  /* ============================================================
+     PIN LOCK
+  ============================================================ */
+  function sha256Hex(text){
+    var enc = new TextEncoder().encode(text);
+    return crypto.subtle.digest('SHA-256', enc).then(function(buf){
+      return Array.prototype.map.call(new Uint8Array(buf), function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    });
+  }
+
+  var pinBtn = document.getElementById('pinBtn');
+  pinBtn.addEventListener('click', function(){
+    if(state.settings.pinHash){
+      var choice = confirm('Remove the current PIN?\n\nOK = remove PIN\nCancel = set a new PIN instead');
+      if(choice){
+        state.settings.pinHash = null; saveState(); renderSettings();
+        showToast('PIN removed');
+        return;
+      }
+    }
+    runPinSetup();
+  });
+
+  function runPinSetup(){
+    showLockOverlay({mode:'setup', onDone: function(pin){
+      sha256Hex(pin).then(function(hash){
+        state.settings.pinHash = hash; saveState(); renderSettings();
+        showToast('PIN set');
+      });
+    }});
+  }
+
+  function showLockOverlay(opts){
+    var overlay = document.createElement('div');
+    overlay.className = 'lock-overlay';
+    overlay.innerHTML =
+      '<div class="lock-word">Paisa<em style="color:var(--accent);">Pilot</em></div>' +
+      '<div class="dots" id="lockDots">' + [0,1,2,3].map(function(){ return '<div class="dot-slot"></div>'; }).join('') + '</div>' +
+      '<div class="lock-msg" id="lockMsg">'+(opts.mode==='setup'?'Choose a 4-digit PIN':'Enter your PIN')+'</div>' +
+      '<div class="keypad" id="lockKeypad"></div>';
+    document.body.appendChild(overlay);
+
+    var digits = '';
+    var stage = opts.mode === 'setup' ? 'first' : 'unlock';
+    var firstPin = '';
+
+    var keys = ['1','2','3','4','5','6','7','8','9','⌫','0','⏎'];
+    var pad = overlay.querySelector('#lockKeypad');
+    keys.forEach(function(k){
+      var b = document.createElement('button');
+      b.textContent = k;
+      b.type = 'button';
+      b.addEventListener('click', function(){ handleKey(k); });
+      pad.appendChild(b);
+    });
+
+    function updateDots(){
+      overlay.querySelectorAll('.dot-slot').forEach(function(d, i){
+        d.classList.toggle('is-filled', i < digits.length);
+      });
+    }
+    function shakeDots(msg){
+      var dots = overlay.querySelector('#lockDots');
+      digits = ''; updateDots();
+      dots.classList.add('shake');
+      overlay.querySelector('#lockMsg').textContent = msg;
+      setTimeout(function(){ dots.classList.remove('shake'); }, 320);
+    }
+
+    function handleKey(k){
+      if(k === '⌫'){ digits = digits.slice(0,-1); updateDots(); return; }
+      if(k === '⏎'){ submit(); return; }
+      if(digits.length < 4){ digits += k; updateDots(); }
+      if(digits.length === 4) submit();
+    }
+
+    function submit(){
+      if(opts.mode === 'setup'){
+        if(stage === 'first'){
+          if(digits.length !== 4){ shakeDots('Enter 4 digits'); return; }
+          firstPin = digits; digits=''; updateDots();
+          stage = 'confirm';
+          overlay.querySelector('#lockMsg').textContent = 'Confirm your PIN';
+        }else{
+          if(digits !== firstPin){
+            shakeDots('Didn\'t match — try again');
+            stage='first'; firstPin='';
+            setTimeout(function(){ overlay.querySelector('#lockMsg').textContent = 'Choose a 4-digit PIN'; }, 340);
+            return;
+          }
+          overlay.remove();
+          opts.onDone(digits);
+        }
+      }else{
+        sha256Hex(digits).then(function(hash){
+          if(hash === state.settings.pinHash){
+            overlay.remove();
+            opts.onDone && opts.onDone();
+          }else{
+            shakeDots('Incorrect PIN');
+          }
+        });
+      }
+    }
+  }
+
+  /* ============================================================
+     TOAST
+  ============================================================ */
+  var toastTimer = null;
+  function showToast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('is-visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove('is-visible'); }, 1600);
+  }
+
+  /* ============================================================
+     INIT
+  ============================================================ */
+  renderChips();
+  applyTheme();
+
+  if(state.settings.pinHash){
+    document.getElementById('app').style.visibility = 'hidden';
+    showLockOverlay({mode:'unlock', onDone: function(){
+      document.getElementById('app').style.visibility = 'visible';
+    }});
+  }
+})();
+</script>
