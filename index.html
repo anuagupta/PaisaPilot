@@ -163,7 +163,9 @@
     border-bottom:1px solid var(--glass-border);
     box-shadow: inset 0 -1px 0 var(--glass-highlight);
   }
-  .brand{ display:flex; flex-direction:column; gap:1px; }
+  .brand{ display:flex; flex-direction:column; gap:3px; }
+  .brand-row{ display:flex; align-items:center; gap:9px; }
+  .brand-mark{ width:30px; height:30px; border-radius:9px; box-shadow:var(--shadow); display:block; }
   .brand .word{
     font-size:26px;
     font-style:italic;
@@ -243,6 +245,8 @@
     margin-top:14px;
   }
   .chip{
+    display:inline-flex;
+    align-items:center;
     border:1px solid var(--glass-border);
     background:var(--glass-bg);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
@@ -252,13 +256,16 @@
     border-radius:100px;
     font-size:13.5px;
     font-weight:600;
-    transition:background .12s ease, color .12s ease, border-color .12s ease, transform .08s ease;
+    transition:background .12s ease, color .12s ease, border-color .12s ease, transform .08s ease, box-shadow .12s ease;
   }
+  .chip-icon{ margin-right:6px; font-size:14px; }
   .chip:active{ transform:scale(0.97); }
   .chip.is-active{
     background:var(--accent);
     border-color:var(--accent);
     color:var(--accent-ink);
+    box-shadow:0 4px 14px rgba(0,0,0,0.16);
+    transform:translateY(-1px);
   }
   .chip.is-hidden{ display:none; }
   .more-toggle{
@@ -410,6 +417,22 @@
     font-size:15px; color:var(--ink); min-width:0;
   }
   .amount-row input:focus{ outline:none; }
+
+  .amount-card{
+    background:var(--surface-alt);
+    border-radius:16px;
+    margin-top:14px;
+    overflow:hidden;
+  }
+  .amount-line{ display:flex; align-items:center; gap:10px; padding:11px 14px; }
+  .amount-line + .amount-line{ border-top:1px solid var(--line); }
+  .amount-line label{ font-size:12.5px; color:var(--ink-muted); font-weight:600; white-space:nowrap; }
+  .amount-line .prefix{ font-family:"IBM Plex Mono",monospace; color:var(--ink-faint); }
+  .amount-line input{
+    flex:1; border:none; background:none; font-family:"IBM Plex Mono",monospace;
+    font-size:15px; color:var(--ink); min-width:0; text-align:right;
+  }
+  .amount-line input:focus{ outline:none; }
 
   .empty-state{
     margin-top:22px;
@@ -626,7 +649,10 @@
 
   <div class="topbar">
     <div class="brand">
-      <div class="word">Paisa<em>Pilot</em></div>
+      <div class="brand-row">
+        <img src="icons/icon-192.png" alt="" class="brand-mark">
+        <div class="word">Paisa<em>Pilot</em></div>
+      </div>
       <div class="tag">autopilot for your paisa</div>
     </div>
     <div class="topbar-actions">
@@ -650,15 +676,17 @@
     <section id="resultsSection" class="hidden">
       <div class="section-label" id="resultCategoryLabel">Results</div>
 
-      <div class="amount-row">
-        <label for="amountInput">Amount</label>
-        <span class="prefix">₹</span>
-        <input type="number" id="amountInput" placeholder="e.g. 2000" inputmode="decimal">
-      </div>
-      <div class="amount-row" style="margin-top:8px;">
-        <label for="surchargeInput">Surcharge</label>
-        <input type="number" id="surchargeInput" placeholder="0" inputmode="decimal">
-        <span class="prefix">%</span>
+      <div class="amount-card">
+        <div class="amount-line">
+          <label for="amountInput">Amount</label>
+          <span class="prefix">₹</span>
+          <input type="number" id="amountInput" placeholder="e.g. 2000" inputmode="decimal">
+        </div>
+        <div class="amount-line">
+          <label for="surchargeInput">Surcharge</label>
+          <input type="number" id="surchargeInput" placeholder="0" inputmode="decimal">
+          <span class="prefix">%</span>
+        </div>
       </div>
 
       <div class="fan" id="fanArea"></div>
@@ -832,31 +860,31 @@
      CATEGORIES
   ============================================================ */
   var CATEGORIES = [
-    {id:'food_delivery', label:'Food Delivery', group:'primary'},
-    {id:'dining', label:'Dining Out', group:'primary'},
-    {id:'instamart', label:'Quick Commerce', group:'primary'},
-    {id:'groceries', label:'Groceries', group:'primary'},
-    {id:'fuel', label:'Fuel', group:'primary'},
-    {id:'travel_booking', label:'Flights & Hotels', group:'primary'},
-    {id:'amazon', label:'Amazon.in', group:'primary'},
-    {id:'online_shopping', label:'Online Shopping', group:'primary'},
-    {id:'offline_retail', label:'Offline Retail', group:'primary'},
-    {id:'utilities', label:'Utility Bills', group:'primary'},
-    {id:'upi_scan', label:'UPI Scan & Pay', group:'primary'},
-    {id:'upi_checkout', label:'UPI Online Checkout', group:'primary'},
-    {id:'international', label:'International', group:'primary'},
-    {id:'hospitalization', label:'Hospitalization', group:'primary'},
-    {id:'movies', label:'Movies', group:'primary'},
-    {id:'adani', label:'Adani Ecosystem', group:'more'},
-    {id:'rent', label:'Rent', group:'more'},
-    {id:'insurance', label:'Insurance', group:'more'},
-    {id:'education', label:'Education Fees', group:'more'},
-    {id:'gold', label:'Gold / Jewellery', group:'more'},
-    {id:'govt', label:'Government / Tax', group:'more'},
-    {id:'wallet_load', label:'Wallet Top-up', group:'more'},
-    {id:'emi', label:'EMI Conversion', group:'more'},
-    {id:'gift_cards', label:'Gift Cards', group:'more'},
-    {id:'base', label:'Everything Else', group:'more'}
+    {id:'food_delivery', label:'Food Delivery', group:'primary', icon:'🍔'},
+    {id:'dining', label:'Dining Out', group:'primary', icon:'🍽️'},
+    {id:'instamart', label:'Quick Commerce', group:'primary', icon:'⚡'},
+    {id:'groceries', label:'Groceries', group:'primary', icon:'🛒'},
+    {id:'fuel', label:'Fuel', group:'primary', icon:'⛽'},
+    {id:'travel_booking', label:'Flights & Hotels', group:'primary', icon:'✈️'},
+    {id:'amazon', label:'Amazon.in', group:'primary', icon:'📦'},
+    {id:'online_shopping', label:'Online Shopping', group:'primary', icon:'🛍️'},
+    {id:'offline_retail', label:'Offline Retail', group:'primary', icon:'🏬'},
+    {id:'utilities', label:'Utility Bills', group:'primary', icon:'💡'},
+    {id:'upi_scan', label:'UPI Scan & Pay', group:'primary', icon:'📲'},
+    {id:'upi_checkout', label:'UPI Online Checkout', group:'primary', icon:'💳'},
+    {id:'international', label:'International', group:'primary', icon:'🌍'},
+    {id:'hospitalization', label:'Hospitalization', group:'primary', icon:'🏥'},
+    {id:'movies', label:'Movies', group:'primary', icon:'🎬'},
+    {id:'adani', label:'Adani Ecosystem', group:'more', icon:'🏗️'},
+    {id:'rent', label:'Rent', group:'more', icon:'🏠'},
+    {id:'insurance', label:'Insurance', group:'more', icon:'🛡️'},
+    {id:'education', label:'Education Fees', group:'more', icon:'🎓'},
+    {id:'gold', label:'Gold / Jewellery', group:'more', icon:'💍'},
+    {id:'govt', label:'Government / Tax', group:'more', icon:'🏛️'},
+    {id:'wallet_load', label:'Wallet Top-up', group:'more', icon:'👛'},
+    {id:'emi', label:'EMI Conversion', group:'more', icon:'🧾'},
+    {id:'gift_cards', label:'Gift Cards', group:'more', icon:'🎁'},
+    {id:'base', label:'Everything Else', group:'more', icon:'💰'}
   ];
   var CAT_BY_ID = {};
   CATEGORIES.forEach(function(c){ CAT_BY_ID[c.id] = c; });
@@ -1245,7 +1273,7 @@
     CATEGORIES.forEach(function(c){
       var btn = document.createElement('button');
       btn.className = 'chip';
-      btn.textContent = c.label;
+      btn.innerHTML = '<span class="chip-icon">'+c.icon+'</span>'+esc(c.label);
       btn.dataset.cat = c.id;
       btn.addEventListener('click', function(){ selectCategory(c.id); });
       if(c.group === 'primary') primaryWrap.appendChild(btn);
@@ -1365,6 +1393,15 @@
   }
   function fmtPct(n){ return (Math.round(n*100)/100).toString() + '%'; }
   function fmtRupee(n){ return '₹' + Math.round(n).toLocaleString('en-IN'); }
+  function hexToRgba(hex, alpha){
+    var h = (hex||'#888888').replace('#','');
+    if(h.length === 3) h = h.split('').map(function(c){ return c+c; }).join('');
+    var r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+    return 'rgba('+r+','+g+','+b+','+alpha+')';
+  }
+  function glowStyle(card){
+    return 'filter:drop-shadow(0 14px 22px '+hexToRgba(card.colorA,0.38)+');';
+  }
 
   function renderResults(){
     if(!activeCat) return;
@@ -1387,7 +1424,7 @@
 
     fan.innerHTML =
       '<div class="recommend-badge"><span class="dot"></span>Recommended</div>' +
-      '<div class="result-card">' + cardVisualHTML(top.card) + '</div>';
+      '<div class="result-card" style="'+glowStyle(top.card)+'">' + cardVisualHTML(top.card) + '</div>';
 
     var routingTip = ROUTING_TIPS[activeCat] || 'Pay directly with this card — no special routing needed for this category.';
 
@@ -1803,7 +1840,7 @@
 
     if(top && top.rate > 0){
       html += '<div class="section-label" style="margin-top:18px;">Best card to pay with</div>';
-      html += '<div class="result-card">' + cardVisualHTML(top.card) + '</div>';
+      html += '<div class="result-card" style="'+glowStyle(top.card)+'">' + cardVisualHTML(top.card) + '</div>';
       html += '<div class="detail-panel" style="margin-top:12px;">' +
         kv('Net Reward Value', '<span class="rate num">'+fmtPct(top.rate)+'</span>' + (top.amountValue ? '<span class="sub num">≈ '+fmtRupee(top.amountValue)+' back</span>' : '')) +
         kv('Reward Format', '<span class="format-pill">'+FORMAT_LABEL[top.format]+'</span>') +
