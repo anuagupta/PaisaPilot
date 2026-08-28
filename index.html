@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
-<meta name="theme-color" content="#221F30">
+<meta name="theme-color" content="#1E1E20">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PaisaPilot">
@@ -514,6 +514,18 @@
   }
   .callout strong{ color:var(--ink); }
 
+  .review-card{ margin-top:10px; }
+  .review-card-name{ font-size:14px; font-weight:700; }
+  .review-card-meta{ font-size:12px; color:var(--ink-faint); margin:2px 0 10px; }
+  .review-link{
+    display:block; text-decoration:none; padding:9px 0;
+    border-top:1px solid var(--line);
+  }
+  .review-link:first-of-type{ border-top:none; }
+  .review-link-title{ font-size:13px; font-weight:600; color:var(--accent); }
+  .review-link-snippet{ font-size:12px; color:var(--ink-muted); margin-top:2px; line-height:1.4; }
+  .review-empty{ font-size:12px; color:var(--ink-faint); }
+
   /* ---------- Tab bar ---------- */
   .tabbar{
     position:fixed;
@@ -758,9 +770,16 @@
           </div>
           <button class="btn secondary" id="pinBtn">Set up</button>
         </div>
+        <div class="settings-row" id="fingerprintRow">
+          <div>
+            <div class="label">Fingerprint unlock</div>
+            <div class="desc" id="fingerprintDesc">Set a PIN first</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="fingerprintToggle"><span class="slider"></span></label>
+        </div>
       </div>
       <div class="callout" style="margin-top:10px;">
-        <strong>Honest note:</strong> this PIN keeps out someone casually picking up your phone — it's a local screen lock, not encryption. Everything stays only in this browser's storage; nothing is sent anywhere.
+        <strong>Honest note:</strong> these keep out someone casually picking up your phone — a local screen lock, not encryption. Everything stays only in this browser's storage; nothing is sent anywhere. Fingerprint unlock uses your device's own biometric prompt (WebAuthn) — if it's cancelled or fails, the PIN screen opens instead, so keep a PIN set as the fallback.
       </div>
     </section>
 
@@ -769,15 +788,17 @@
       <div class="settings-card">
         <div class="settings-row">
           <div>
-            <div class="label">Rates last reviewed</div>
+            <div class="label">Cards last checked</div>
             <div class="desc" id="lastReviewDesc">—</div>
           </div>
-          <button class="btn secondary" id="reviewBtn">Mark reviewed today</button>
+          <button class="btn secondary" id="reviewBtn">Check for card updates</button>
         </div>
       </div>
       <div class="callout" style="margin-top:10px;">
-        Bank offers change often. This app doesn't auto-scrape bank sites (fragile, often against their ToS) — refresh rates yourself periodically, or ask me to help you research current terms and update a card in <strong>My Cards</strong>.
+        <strong>Why this doesn't auto-apply changes:</strong> reading a bank's T&amp;C page and correctly extracting an exact reward rate is genuinely error-prone — a wrong auto-applied number could cost you real money and you'd have no reason to double-check it. So this searches the web for recent news on each of your active cards and shows you the results with links — you read them and edit <strong>My Cards</strong> yourself if something changed. Uses the same backend as Smart Buy (Settings above).
       </div>
+      <div id="reviewStatus" class="callout hidden" style="margin-top:10px;"></div>
+      <div id="reviewResults"></div>
     </section>
 
     <section>
@@ -1194,7 +1215,7 @@
   function defaultState(){
     return {
       cards: JSON.parse(JSON.stringify(DEFAULT_CARDS)),
-      settings: { theme:'system', pinHash:null, lastReview: todayISO(), buyBackendUrl:'' }
+      settings: { theme:'system', pinHash:null, lastReview: todayISO(), buyBackendUrl:'', fingerprintEnabled:false, webauthnCredentialId:null }
     };
   }
   function todayISO(){
@@ -1209,6 +1230,8 @@
       if(!parsed || !parsed.cards) return defaultState();
       if(!parsed.settings) parsed.settings = {};
       if(parsed.settings.buyBackendUrl == null) parsed.settings.buyBackendUrl = '';
+      if(parsed.settings.fingerprintEnabled == null) parsed.settings.fingerprintEnabled = false;
+      if(parsed.settings.webauthnCredentialId == null) parsed.settings.webauthnCredentialId = null;
       return parsed;
     }catch(e){ return defaultState(); }
   }
@@ -1713,12 +1736,95 @@
     document.getElementById('pinStatusDesc').textContent = state.settings.pinHash ? 'PIN is set' : 'No PIN set';
     document.getElementById('pinBtn').textContent = state.settings.pinHash ? 'Change / remove' : 'Set up';
     document.getElementById('buyBackendInput').value = state.settings.buyBackendUrl || '';
+
+    var fpToggle = document.getElementById('fingerprintToggle');
+    var fpDesc = document.getElementById('fingerprintDesc');
+    fpToggle.checked = !!state.settings.fingerprintEnabled;
+    if(!state.settings.pinHash){
+      fpToggle.disabled = true;
+      fpDesc.textContent = 'Set a PIN first';
+    }else if(!webauthnSupported()){
+      fpToggle.disabled = true;
+      fpDesc.textContent = 'Not supported on this browser';
+    }else{
+      fpToggle.disabled = false;
+      fpDesc.textContent = state.settings.fingerprintEnabled ? 'On — falls back to PIN if cancelled' : 'Off';
+      platformAuthAvailable().then(function(avail){
+        if(!avail && !state.settings.fingerprintEnabled){
+          fpToggle.disabled = true;
+          fpDesc.textContent = 'No fingerprint/face unlock found on this device';
+        }
+      });
+    }
   }
   document.getElementById('reviewBtn').addEventListener('click', function(){
-    state.settings.lastReview = todayISO();
-    saveState(); renderSettings();
-    showToast('Marked reviewed today');
+    var backend = state.settings.buyBackendUrl;
+    var statusEl = document.getElementById('reviewStatus');
+    var resultsEl = document.getElementById('reviewResults');
+    resultsEl.innerHTML = '';
+    statusEl.classList.remove('hidden');
+    if(!backend){
+      statusEl.innerHTML = '<strong>No backend set.</strong> Add your Smart Buy backend URL above first — this reuses it.';
+      return;
+    }
+    var activeCards = state.cards.filter(function(c){ return c.active; });
+    if(!activeCards.length){
+      statusEl.innerHTML = 'No active cards to check — mark some cards active in My Cards first.';
+      return;
+    }
+    var btn = document.getElementById('reviewBtn');
+    var origLabel = btn.textContent;
+    btn.disabled = true;
+    var sections = [];
+    var i = 0;
+    function finish(){
+      btn.disabled = false;
+      btn.textContent = origLabel;
+      state.settings.lastReview = todayISO();
+      saveState(); renderSettings();
+      resultsEl.innerHTML = sections.join('');
+      statusEl.innerHTML = 'Checked ' + activeCards.length + ' card' + (activeCards.length===1?'':'s') + '. These are just search results — read them and edit My Cards yourself if a rate actually changed.';
+    }
+    function next(){
+      if(i >= activeCards.length){ finish(); return; }
+      var card = activeCards[i];
+      statusEl.innerHTML = 'Checking ' + (i+1) + ' of ' + activeCards.length + ': ' + esc(card.bank + ' ' + card.variant) + '…';
+      var query = card.bank + ' ' + card.variant + ' reward rate cashback changes 2026';
+      var sep = backend.indexOf('?') === -1 ? '?' : '&';
+      fetch(backend + sep + 'mode=news&q=' + encodeURIComponent(query))
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          sections.push(reviewCardSectionHTML(card, (data && data.ok) ? data.results : null, null));
+        })
+        .catch(function(err){
+          sections.push(reviewCardSectionHTML(card, null, err.message));
+        })
+        .then(function(){ i++; next(); });
+    }
+    next();
   });
+  function reviewCardSectionHTML(card, results, errMsg){
+    var name = esc(card.bank + ' ' + card.variant);
+    var verified = card.lastVerified ? ('In-app data last verified ' + esc(card.lastVerified)) : 'In-app data has no verified-on date';
+    var body;
+    if(errMsg){
+      body = '<div class="review-empty">Search failed: ' + esc(errMsg) + '</div>';
+    }else if(results && results.length){
+      body = results.slice(0,3).map(function(it){
+        return '<a class="review-link" href="'+esc(it.link||'#')+'" target="_blank" rel="noopener">' +
+          '<div class="review-link-title">'+esc(it.title||'Untitled result')+'</div>' +
+          (it.snippet ? '<div class="review-link-snippet">'+esc(it.snippet)+'</div>' : '') +
+          '</a>';
+      }).join('');
+    }else{
+      body = '<div class="review-empty">No recent results — likely nothing new.</div>';
+    }
+    return '<div class="settings-card review-card">' +
+      '<div class="review-card-name">'+name+'</div>' +
+      '<div class="review-card-meta">'+verified+'</div>' +
+      body +
+    '</div>';
+  }
   document.getElementById('exportBtn').addEventListener('click', function(){
     var blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
     var url = URL.createObjectURL(blob);
@@ -1860,6 +1966,74 @@
   }
 
   /* ============================================================
+     FINGERPRINT UNLOCK (WebAuthn platform authenticator)
+  ============================================================ */
+  function webauthnSupported(){
+    return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create && navigator.credentials.get);
+  }
+  function platformAuthAvailable(){
+    if(!webauthnSupported()) return Promise.resolve(false);
+    return PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().catch(function(){ return false; });
+  }
+  function bufToB64url(buf){
+    var bin = String.fromCharCode.apply(null, new Uint8Array(buf));
+    return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  function b64urlToBuf(str){
+    str = str.replace(/-/g,'+').replace(/_/g,'/');
+    while(str.length % 4) str += '=';
+    var bin = atob(str);
+    var buf = new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++) buf[i] = bin.charCodeAt(i);
+    return buf.buffer;
+  }
+  function registerFingerprint(){
+    var challenge = crypto.getRandomValues(new Uint8Array(32));
+    var userId = crypto.getRandomValues(new Uint8Array(16));
+    return navigator.credentials.create({
+      publicKey: {
+        challenge: challenge,
+        rp: { name: 'PaisaPilot' },
+        user: { id: userId, name: 'paisapilot-local', displayName: 'PaisaPilot' },
+        pubKeyCredParams: [{type:'public-key', alg:-7}, {type:'public-key', alg:-257}],
+        authenticatorSelection: { authenticatorAttachment:'platform', userVerification:'required' },
+        timeout: 60000,
+        attestation: 'none'
+      }
+    }).then(function(cred){ return bufToB64url(cred.rawId); });
+  }
+  function verifyFingerprint(credentialIdB64url){
+    var challenge = crypto.getRandomValues(new Uint8Array(32));
+    return navigator.credentials.get({
+      publicKey: {
+        challenge: challenge,
+        allowCredentials: [{ type:'public-key', id: b64urlToBuf(credentialIdB64url) }],
+        userVerification: 'required',
+        timeout: 20000
+      }
+    });
+  }
+  document.getElementById('fingerprintToggle').addEventListener('change', function(){
+    var toggle = this;
+    if(toggle.checked){
+      registerFingerprint().then(function(credId){
+        state.settings.fingerprintEnabled = true;
+        state.settings.webauthnCredentialId = credId;
+        saveState(); renderSettings();
+        showToast('Fingerprint unlock enabled');
+      }).catch(function(){
+        toggle.checked = false;
+        showToast('Couldn\'t set up fingerprint unlock');
+      });
+    }else{
+      state.settings.fingerprintEnabled = false;
+      state.settings.webauthnCredentialId = null;
+      saveState(); renderSettings();
+      showToast('Fingerprint unlock off');
+    }
+  });
+
+  /* ============================================================
      PIN LOCK
   ============================================================ */
   function sha256Hex(text){
@@ -1874,7 +2048,10 @@
     if(state.settings.pinHash){
       var choice = confirm('Remove the current PIN?\n\nOK = remove PIN\nCancel = set a new PIN instead');
       if(choice){
-        state.settings.pinHash = null; saveState(); renderSettings();
+        state.settings.pinHash = null;
+        state.settings.fingerprintEnabled = false;
+        state.settings.webauthnCredentialId = null;
+        saveState(); renderSettings();
         showToast('PIN removed');
         return;
       }
@@ -1985,9 +2162,16 @@
 
   if(state.settings.pinHash){
     document.getElementById('app').style.visibility = 'hidden';
-    showLockOverlay({mode:'unlock', onDone: function(){
-      document.getElementById('app').style.visibility = 'visible';
-    }});
+    function unlockApp(){ document.getElementById('app').style.visibility = 'visible'; }
+    if(state.settings.fingerprintEnabled && state.settings.webauthnCredentialId && webauthnSupported()){
+      verifyFingerprint(state.settings.webauthnCredentialId).then(function(){
+        unlockApp();
+      }).catch(function(){
+        showLockOverlay({mode:'unlock', onDone: unlockApp});
+      });
+    }else{
+      showLockOverlay({mode:'unlock', onDone: unlockApp});
+    }
   }
 })();
 </script>
